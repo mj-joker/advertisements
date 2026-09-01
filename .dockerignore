@@ -1,0 +1,11 @@
+bin/
+obj/
+**/bin/
+**/obj/
+.git/
+.github/
+.vs/
+.vscode/
+*.user
+README.md
+*.sln
