@@ -1,0 +1,70 @@
+@model MessagesViewModel
+@{
+    ViewData["Title"] = "Messages";
+    ViewBag.CurrentUser = Model.CurrentUser;
+}
+
+<div class="messages-layout @(Model.ActivePartner != null ? "chat-open" : "")">
+    <aside class="conversation-list">
+        <header class="topbar" style="padding:4px 12px 12px;">
+            <h1>Messages</h1>
+        </header>
+
+        @if (!Model.Conversations.Any())
+        {
+            <p class="muted" style="padding:0 16px;">No conversations yet. Visit a profile and say hi 👋</p>
+        }
+        else
+        {
+            @foreach (var c in Model.Conversations)
+            {
+                var isActive = Model.ActivePartner != null && Model.ActivePartner.Id == c.Partner.Id;
+                <a class="conv-row @(isActive ? "active" : "")" asp-controller="Home" asp-action="Messages" asp-route-handle="@c.Partner.Handle">
+                    <div class="avatar avatar-sm" style="background:@c.Partner.AvatarColor">@c.Partner.Initials</div>
+                    <div class="conv-info">
+                        <strong>@c.Partner.DisplayName</strong>
+                        <span class="muted">@(c.LastMessage != null ? c.LastMessage.Content : "Say hello")</span>
+                    </div>
+                </a>
+            }
+        }
+    </aside>
+
+    <section class="thread-col">
+        @if (Model.ActivePartner == null)
+        {
+            <div class="thread-empty">
+                <p class="muted">Select a conversation to start chatting.</p>
+            </div>
+        }
+        else
+        {
+            <header class="thread-header">
+                <a asp-controller="Home" asp-action="Messages" class="thread-back" aria-label="Back to conversations">
+                    <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                </a>
+                <a asp-controller="Home" asp-action="Profile" asp-route-handle="@Model.ActivePartner.Handle" class="avatar avatar-sm" style="background:@Model.ActivePartner.AvatarColor">@Model.ActivePartner.Initials</a>
+                <div>
+                    <strong>@Model.ActivePartner.DisplayName</strong>
+                    <span class="muted" style="display:block;font-size:.78rem;">@Model.ActivePartner.Handle</span>
+                </div>
+            </header>
+
+            <div class="thread-messages" id="threadMessages">
+                @foreach (var m in Model.Thread)
+                {
+                    var mine = m.FromUserId == Model.CurrentUser!.Id;
+                    <div class="thread-msg @(mine ? "mine" : "theirs")">
+                        <span>@m.Content</span>
+                    </div>
+                }
+            </div>
+
+            <form class="thread-composer" id="threadComposer" data-to-user-id="@Model.ActivePartner.Id">
+                @Html.AntiForgeryToken()
+                <input type="text" id="threadInput" placeholder="Write a message…" maxlength="500" autocomplete="off" />
+                <button type="submit" class="btn-primary">Send</button>
+            </form>
+        }
+    </section>
+</div>

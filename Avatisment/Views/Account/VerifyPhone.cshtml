@@ -1,0 +1,40 @@
+@model VerifyCodeViewModel
+@{
+    ViewData["Title"] = "Verify your phone";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-form-wrap">
+    <div class="verify-icon">📱</div>
+    <h2>Verify your phone</h2>
+    <p class="muted">We sent a 6-digit code by SMS to <strong>@Model.Destination</strong>.</p>
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="alert-error">@Model.Error</div>
+    }
+
+    <form asp-controller="Account" asp-action="VerifyPhone" method="post" class="auth-form">
+        @Html.AntiForgeryToken()
+
+        <label>
+            <span>Verification code</span>
+            <input asp-for="Code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code" autofocus />
+            <span asp-validation-for="Code" class="field-error"></span>
+        </label>
+
+        <button type="submit" class="btn-primary btn-block">Verify phone</button>
+    </form>
+
+    <form asp-controller="Account" asp-action="ResendPhoneCode" method="post">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="link-btn">Resend code</button>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.DemoCode))
+    {
+        <div class="demo-hint">
+            <strong>Demo mode:</strong> no SMS provider is connected, so here's the code that would have been sent: <strong>@Model.DemoCode</strong>
+        </div>
+    }
+</div>

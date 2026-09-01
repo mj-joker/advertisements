@@ -1,0 +1,57 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Sign up";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-form-wrap">
+    <h2>Join Avatisment</h2>
+    <p class="muted">Create an account in seconds.</p>
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="alert-error">@Model.Error</div>
+    }
+
+    <form asp-controller="Account" asp-action="Register" method="post" class="auth-form">
+        @Html.AntiForgeryToken()
+
+        <label>
+            <span>Display name</span>
+            <input asp-for="DisplayName" type="text" placeholder="Jordan Lee" autocomplete="name" />
+            <span asp-validation-for="DisplayName" class="field-error"></span>
+        </label>
+
+        <label>
+            <span>Email</span>
+            <input asp-for="Email" type="email" placeholder="you@example.com" autocomplete="email" />
+            <span asp-validation-for="Email" class="field-error"></span>
+        </label>
+
+        <label>
+            <span>Phone number</span>
+            <input asp-for="PhoneNumber" type="tel" placeholder="+1 555 010 0100" autocomplete="tel" />
+            <span asp-validation-for="PhoneNumber" class="field-error"></span>
+        </label>
+
+        <label>
+            <span>Password</span>
+            <input asp-for="Password" type="password" placeholder="At least 8 characters, 1 number" autocomplete="new-password" />
+            <span asp-validation-for="Password" class="field-error"></span>
+        </label>
+
+        <label>
+            <span>Confirm password</span>
+            <input asp-for="ConfirmPassword" type="password" placeholder="Re-enter your password" autocomplete="new-password" />
+            <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+        </label>
+
+        <button type="submit" class="btn-primary btn-block">Create account</button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a asp-controller="Account" asp-action="Login">Log in</a></p>
+
+    <div class="demo-hint">
+        <strong>Security:</strong> after signing up you'll verify your email and phone with one-time codes before you can use the site.
+    </div>
+</div>

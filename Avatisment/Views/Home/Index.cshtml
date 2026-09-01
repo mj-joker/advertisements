@@ -1,0 +1,172 @@
+@model FeedViewModel
+@{
+    ViewData["Title"] = "Home";
+    ViewBag.CurrentUser = Model.CurrentUser;
+}
+
+<div class="feed-layout">
+    <div class="feed-col">
+        <header class="topbar">
+            <h1>Home</h1>
+        </header>
+
+        @if (TempData["ComposeError"] is string composeError)
+        {
+            <div class="alert-error">@composeError</div>
+        }
+
+        @if (Model.CurrentUser != null)
+        {
+            <form id="composeBox" class="compose-card" asp-controller="Home" asp-action="CreatePost" method="post">
+                @Html.AntiForgeryToken()
+                <div class="avatar avatar-md" style="background:@Model.CurrentUser.AvatarColor">@Model.CurrentUser.Initials</div>
+                <div class="compose-body">
+                    <textarea id="composeInput" name="Content" placeholder="What's on your mind, @Model.CurrentUser.DisplayName.Split(' ')[0]?" maxlength="280" rows="2"></textarea>
+                    <div class="compose-type-toggle">
+                        <label class="type-pill">
+                            <input type="radio" name="IsReel" value="false" checked />
+                            <span>📝 Post</span>
+                        </label>
+                        <label class="type-pill">
+                            <input type="radio" name="IsReel" value="true" />
+                            <span>🎬 Reel</span>
+                        </label>
+                    </div>
+                    <div class="compose-footer">
+                        <div class="compose-tools">
+                            <span class="tool-pill">📷 Photo</span>
+                            <span class="tool-pill">😊 Feeling</span>
+                            <span class="tool-pill">📍 Location</span>
+                        </div>
+                        <button type="submit" class="btn-primary">Post</button>
+                    </div>
+                </div>
+            </form>
+        }
+
+        <div class="post-list">
+            @foreach (var post in Model.Posts)
+            {
+                <article class="post-card" data-post-id="@post.Id">
+                    <div class="post-head">
+                        <a asp-controller="Home" asp-action="Profile" asp-route-handle="@post.Author?.Handle" class="avatar avatar-md" style="background:@post.Author?.AvatarColor">@post.Author?.Initials</a>
+                        <div class="post-head-meta">
+                            <a asp-controller="Home" asp-action="Profile" asp-route-handle="@post.Author?.Handle" class="post-author">@post.Author?.DisplayName</a>
+                            <span class="post-sub">@post.Author?.Handle · @TimeAgo(post.CreatedOn)</span>
+                        </div>
+                        @if (post.Type == PostType.Reel)
+                        {
+                            <span class="reel-badge">🎬 Reel</span>
+                        }
+                        <button class="icon-btn post-more">⋯</button>
+                    </div>
+
+                    <p class="post-content">@post.Content</p>
+
+                    @if (!string.IsNullOrEmpty(post.ImageGradient))
+                    {
+                        <div class="post-media @(post.Type == PostType.Reel ? "post-media-reel" : "")" style="background:@post.ImageGradient"></div>
+                    }
+
+                    <div class="post-stats">
+                        <span>@post.LikedByUserIds.Count likes</span>
+                        <span>@post.Comments.Count comments</span>
+                    </div>
+
+                    <div class="post-actions">
+                        <button class="action-btn like-btn @(post.LikedByCurrentUser ? "liked" : "")" data-post-id="@post.Id">
+                            <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+                            <span class="like-count">@post.LikedByUserIds.Count</span>
+                        </button>
+                        <button class="action-btn comment-toggle" data-post-id="@post.Id">
+                            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <span>@post.Comments.Count</span>
+                        </button>
+                        <button class="action-btn share-btn">
+                            <svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>
+                            <span>Share</span>
+                        </button>
+                    </div>
+
+                    <div class="comment-section" id="comments-@post.Id" hidden>
+                        <div class="comment-list">
+                            @foreach (var c in post.Comments)
+                            {
+                                <div class="comment-row">
+                                    <div class="avatar avatar-xs" style="background:@c.Author?.AvatarColor">@c.Author?.Initials</div>
+                                    <div class="comment-bubble">
+                                        <strong>@c.Author?.DisplayName</strong>
+                                        <span>@c.Content</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        @if (Model.CurrentUser != null)
+                        {
+                            <form class="comment-form" data-post-id="@post.Id">
+                                <div class="avatar avatar-xs" style="background:@Model.CurrentUser.AvatarColor">@Model.CurrentUser.Initials</div>
+                                <input type="text" placeholder="Write a comment…" maxlength="200" />
+                                <button type="submit" class="icon-btn send-btn">➤</button>
+                            </form>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+
+    <aside class="right-col">
+        <div class="widget search-widget">
+            <form asp-controller="Home" asp-action="Explore" method="get" class="search-form">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" name="q" placeholder="Search Avatisment" />
+            </form>
+        </div>
+
+        <div class="widget">
+            <h3>Trending</h3>
+            @if (!Model.TrendingTags.Any())
+            {
+                <p class="muted">No trends yet — start posting!</p>
+            }
+            else
+            {
+                @foreach (var tag in Model.TrendingTags)
+                {
+                    <div class="trend-row">
+                        <div>
+                            <strong>@tag.Tag</strong>
+                            <span class="muted">@tag.Count posts</span>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="widget">
+            <h3>Who to follow</h3>
+            @foreach (var u in Model.SuggestedUsers)
+            {
+                <div class="suggest-row">
+                    <a asp-controller="Home" asp-action="Profile" asp-route-handle="@u.Handle" class="avatar avatar-sm" style="background:@u.AvatarColor">@u.Initials</a>
+                    <div class="suggest-info">
+                        <a asp-controller="Home" asp-action="Profile" asp-route-handle="@u.Handle"><strong>@u.DisplayName</strong></a>
+                        <span class="muted">@u.Handle</span>
+                    </div>
+                    <button class="btn-ghost follow-btn" data-user-id="@u.Id">Follow</button>
+                </div>
+            }
+        </div>
+    </aside>
+</div>
+
+@functions {
+    string TimeAgo(DateTime dt)
+    {
+        var span = DateTime.UtcNow - dt;
+        if (span.TotalMinutes < 1) return "just now";
+        if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes}m";
+        if (span.TotalHours < 24) return $"{(int)span.TotalHours}h";
+        return $"{(int)span.TotalDays}d";
+    }
+}

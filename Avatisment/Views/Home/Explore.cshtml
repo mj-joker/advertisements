@@ -1,0 +1,150 @@
+@model ExploreViewModel
+@{
+    ViewData["Title"] = "Explore";
+    ViewBag.CurrentUser = Model.CurrentUser;
+}
+
+<div class="feed-layout">
+    <div class="feed-col">
+        <header class="topbar">
+            <h1>Explore</h1>
+        </header>
+
+        <form asp-controller="Home" asp-action="Explore" method="get" class="explore-search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" name="q" value="@Model.Query" placeholder="Search people or posts…" autofocus />
+            @if (!string.IsNullOrWhiteSpace(Model.Query))
+            {
+                <a asp-controller="Home" asp-action="Explore" class="clear-search">Clear</a>
+            }
+        </form>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <section class="explore-section">
+                <h3>People</h3>
+                @if (!Model.MatchingUsers.Any())
+                {
+                    <p class="muted">No people found for "@Model.Query".</p>
+                }
+                else
+                {
+                    <div class="people-grid">
+                        @foreach (var u in Model.MatchingUsers)
+                        {
+                            <a asp-controller="Home" asp-action="Profile" asp-route-handle="@u.Handle" class="people-card">
+                                <div class="avatar avatar-md" style="background:@u.AvatarColor">@u.Initials</div>
+                                <div>
+                                    <strong>@u.DisplayName</strong>
+                                    <span class="muted">@u.Handle</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+            </section>
+
+            <section class="explore-section">
+                <h3>Posts</h3>
+                @if (!Model.MatchingPosts.Any())
+                {
+                    <p class="muted">No posts found for "@Model.Query".</p>
+                }
+                else
+                {
+                    <div class="post-list">
+                        @foreach (var post in Model.MatchingPosts)
+                        {
+                            <article class="post-card" data-post-id="@post.Id">
+                                <div class="post-head">
+                                    <a asp-controller="Home" asp-action="Profile" asp-route-handle="@post.Author?.Handle" class="avatar avatar-md" style="background:@post.Author?.AvatarColor">@post.Author?.Initials</a>
+                                    <div class="post-head-meta">
+                                        <a asp-controller="Home" asp-action="Profile" asp-route-handle="@post.Author?.Handle" class="post-author">@post.Author?.DisplayName</a>
+                                        <span class="post-sub">@post.Author?.Handle</span>
+                                    </div>
+                                </div>
+                                <p class="post-content">@post.Content</p>
+                                <div class="post-actions">
+                                    <button class="action-btn like-btn @(post.LikedByCurrentUser ? "liked" : "")" data-post-id="@post.Id">
+                                        <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+                                        <span class="like-count">@post.LikedByUserIds.Count</span>
+                                    </button>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        }
+        else
+        {
+            <section class="explore-section">
+                <h3>Trending now</h3>
+                <div class="post-list">
+                    @foreach (var post in Model.TrendingPosts)
+                    {
+                        <article class="post-card" data-post-id="@post.Id">
+                            <div class="post-head">
+                                <a asp-controller="Home" asp-action="Profile" asp-route-handle="@post.Author?.Handle" class="avatar avatar-md" style="background:@post.Author?.AvatarColor">@post.Author?.Initials</a>
+                                <div class="post-head-meta">
+                                    <a asp-controller="Home" asp-action="Profile" asp-route-handle="@post.Author?.Handle" class="post-author">@post.Author?.DisplayName</a>
+                                    <span class="post-sub">@post.Author?.Handle</span>
+                                </div>
+                            </div>
+                            <p class="post-content">@post.Content</p>
+                            @if (!string.IsNullOrEmpty(post.ImageGradient))
+                            {
+                                <div class="post-media" style="background:@post.ImageGradient"></div>
+                            }
+                            <div class="post-actions">
+                                <button class="action-btn like-btn @(post.LikedByCurrentUser ? "liked" : "")" data-post-id="@post.Id">
+                                    <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+                                    <span class="like-count">@post.LikedByUserIds.Count</span>
+                                </button>
+                                <button class="action-btn"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>@post.Comments.Count</span></button>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+
+    <aside class="right-col">
+        <div class="widget">
+            <h3>Trending tags</h3>
+            @if (!Model.TrendingTags.Any())
+            {
+                <p class="muted">No trends yet.</p>
+            }
+            else
+            {
+                @foreach (var tag in Model.TrendingTags)
+                {
+                    <a asp-controller="Home" asp-action="Explore" asp-route-q="@tag.Tag" class="trend-row" style="display:block;">
+                        <strong>@tag.Tag</strong>
+                        <span class="muted">@tag.Count posts</span>
+                    </a>
+                }
+            }
+        </div>
+
+        @if (string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <div class="widget">
+                <h3>Discover people</h3>
+                @foreach (var u in Model.DiscoverPeople)
+                {
+                    <div class="suggest-row">
+                        <a asp-controller="Home" asp-action="Profile" asp-route-handle="@u.Handle" class="avatar avatar-sm" style="background:@u.AvatarColor">@u.Initials</a>
+                        <div class="suggest-info">
+                            <a asp-controller="Home" asp-action="Profile" asp-route-handle="@u.Handle"><strong>@u.DisplayName</strong></a>
+                            <span class="muted">@u.Handle</span>
+                        </div>
+                        <button class="btn-ghost follow-btn" data-user-id="@u.Id">Follow</button>
+                    </div>
+                }
+            </div>
+        }
+    </aside>
+</div>

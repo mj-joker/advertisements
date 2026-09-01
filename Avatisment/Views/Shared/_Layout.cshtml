@@ -1,0 +1,85 @@
+@{
+    var currentUser = ViewBag.CurrentUser as AppUser;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var unread = ViewBag.UnreadCount as int? ?? 0;
+    Func<string, string> activeIf = a => a.Equals(currentAction, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Avatisment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark">A</span>
+                <span class="brand-name">Avatisment</span>
+            </a>
+
+            <nav class="side-nav">
+                <a class="side-nav-item @activeIf("Index")" asp-controller="Home" asp-action="Index">
+                    <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+                    <span>Home</span>
+                </a>
+                <a class="side-nav-item @activeIf("Explore")" asp-controller="Home" asp-action="Explore">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    <span>Explore</span>
+                </a>
+                <a class="side-nav-item @activeIf("Notifications")" asp-controller="Home" asp-action="Notifications">
+                    <svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span>Notifications</span>
+                    @if (unread > 0)
+                    {
+                        <span class="badge">@unread</span>
+                    }
+                </a>
+                <a class="side-nav-item @activeIf("Messages")" asp-controller="Home" asp-action="Messages">
+                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Messages</span>
+                </a>
+                @if (currentUser != null)
+                {
+                    <a class="side-nav-item @activeIf("Profile")" asp-controller="Home" asp-action="Profile" asp-route-handle="@currentUser.Handle">
+                        <svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>Profile</span>
+                    </a>
+                }
+            </nav>
+
+            @if (currentUser != null)
+            {
+                <button class="compose-btn" onclick="document.getElementById('composeBox')?.scrollIntoView({behavior:'smooth'}); document.getElementById('composeInput')?.focus();">
+                    + New Post
+                </button>
+
+                <div class="side-user-card">
+                    <div class="avatar avatar-sm" style="background:@currentUser.AvatarColor">@currentUser.Initials</div>
+                    <div class="side-user-info">
+                        <strong>@currentUser.DisplayName</strong>
+                        <span>@currentUser.Handle</span>
+                    </div>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="icon-btn" title="Log out">
+                            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                        </button>
+                    </form>
+                </div>
+            }
+        </aside>
+
+        <main class="main-col">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

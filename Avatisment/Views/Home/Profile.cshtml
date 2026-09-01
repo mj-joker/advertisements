@@ -1,0 +1,88 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = Model.ProfileUser.DisplayName;
+    ViewBag.CurrentUser = Model.CurrentUser;
+}
+
+<div class="feed-layout">
+    <div class="feed-col">
+        <header class="topbar">
+            <h1>@Model.ProfileUser.DisplayName</h1>
+            <span class="muted">@Model.Posts.Count posts</span>
+        </header>
+
+        <div class="profile-card">
+            <div class="profile-cover" style="background:@Model.ProfileUser.CoverGradient"></div>
+            <div class="profile-body">
+                <div class="avatar avatar-xl profile-avatar" style="background:@Model.ProfileUser.AvatarColor">@Model.ProfileUser.Initials</div>
+
+                @if (!Model.IsOwnProfile)
+                {
+                    <div class="profile-actions" data-profile-handle="@Model.ProfileUser.Handle">
+                        <button class="btn-primary profile-follow-btn @(Model.IsFollowing ? "following" : "")" data-user-id="@Model.ProfileUser.Id">
+                            @(Model.IsFollowing ? "Following" : "Follow")
+                        </button>
+                        @if (Model.IsFollowing)
+                        {
+                            <a class="btn-ghost message-btn" asp-controller="Home" asp-action="Messages" asp-route-handle="@Model.ProfileUser.Handle">
+                                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                Message
+                            </a>
+                        }
+                    </div>
+                }
+
+                <h2>@Model.ProfileUser.DisplayName</h2>
+                <span class="muted">@Model.ProfileUser.Handle</span>
+                <p class="profile-bio">@Model.ProfileUser.Bio</p>
+
+                <div class="profile-stats">
+                    <span><strong>@Model.ProfileUser.FollowingIds.Count</strong> Following</span>
+                    <span><strong>@Model.ProfileUser.FollowerIds.Count</strong> Followers</span>
+                    <span>Joined @Model.ProfileUser.JoinedOn.ToString("MMM yyyy")</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="post-list">
+            @foreach (var post in Model.Posts)
+            {
+                <article class="post-card" data-post-id="@post.Id">
+                    <div class="post-head">
+                        <div class="avatar avatar-md" style="background:@post.Author?.AvatarColor">@post.Author?.Initials</div>
+                        <div class="post-head-meta">
+                            <span class="post-author">@post.Author?.DisplayName</span>
+                            <span class="post-sub">@post.Author?.Handle</span>
+                        </div>
+                    </div>
+                    <p class="post-content">@post.Content</p>
+                    @if (!string.IsNullOrEmpty(post.ImageGradient))
+                    {
+                        <div class="post-media" style="background:@post.ImageGradient"></div>
+                    }
+                    <div class="post-stats">
+                        <span>@post.LikedByUserIds.Count likes</span>
+                        <span>@post.Comments.Count comments</span>
+                    </div>
+                    <div class="post-actions">
+                        <button class="action-btn like-btn @(post.LikedByCurrentUser ? "liked" : "")" data-post-id="@post.Id">
+                            <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+                            <span class="like-count">@post.LikedByUserIds.Count</span>
+                        </button>
+                    </div>
+                </article>
+            }
+            @if (!Model.Posts.Any())
+            {
+                <p class="muted" style="padding:2rem;text-align:center;">No posts yet.</p>
+            }
+        </div>
+    </div>
+
+    <aside class="right-col">
+        <div class="widget">
+            <h3>About</h3>
+            <p class="muted">@Model.ProfileUser.Bio</p>
+        </div>
+    </aside>
+</div>

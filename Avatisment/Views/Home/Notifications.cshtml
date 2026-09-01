@@ -1,0 +1,77 @@
+@model NotificationsViewModel
+@{
+    ViewData["Title"] = "Notifications";
+    ViewBag.CurrentUser = Model.CurrentUser;
+    ViewBag.UnreadCount = 0;
+}
+
+<div class="feed-layout">
+    <div class="feed-col">
+        <header class="topbar">
+            <h1>Notifications</h1>
+        </header>
+
+        <div class="notif-list">
+            @if (!Model.Notifications.Any())
+            {
+                <p class="muted" style="padding:2rem;text-align:center;">You're all caught up — no notifications yet.</p>
+            }
+            else
+            {
+                @foreach (var n in Model.Notifications)
+                {
+                    <a class="notif-row @(n.Read ? "" : "unread")"
+                       asp-controller="Home" asp-action="Profile" asp-route-handle="@n.Actor?.Handle">
+                        <div class="avatar avatar-sm" style="background:@n.Actor?.AvatarColor">@n.Actor?.Initials</div>
+                        <div class="notif-icon notif-icon-@n.Type.ToString().ToLower()">
+                            @switch (n.Type)
+                            {
+                                case NotificationType.Like:
+                                    <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+                                    break;
+                                case NotificationType.Comment:
+                                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    break;
+                                case NotificationType.Follow:
+                                    <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    break;
+                            }
+                        </div>
+                        <div class="notif-text">
+                            <span>
+                                <strong>@n.Actor?.DisplayName</strong>
+                                @switch (n.Type)
+                                {
+                                    case NotificationType.Like:
+                                        <text> liked your post</text>
+                                        break;
+                                    case NotificationType.Comment:
+                                        <text> commented on your post</text>
+                                        break;
+                                    case NotificationType.Follow:
+                                        <text> started following you</text>
+                                        break;
+                                }
+                            </span>
+                            @if (!string.IsNullOrEmpty(n.PostExcerpt))
+                            {
+                                <span class="notif-excerpt">"@n.PostExcerpt"</span>
+                            }
+                        </div>
+                        @if (!n.Read)
+                        {
+                            <span class="notif-dot"></span>
+                        }
+                    </a>
+                }
+            }
+        </div>
+    </div>
+
+    <aside class="right-col">
+        <div class="widget">
+            <h3>About notifications</h3>
+            <p class="muted">You'll see likes, comments, and new followers here as they happen.</p>
+        </div>
+    </aside>
+</div>

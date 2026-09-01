@@ -1,0 +1,40 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Log in";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-form-wrap">
+    <h2>Welcome back</h2>
+    <p class="muted">Log in to keep up with your people.</p>
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="alert-error">@Model.Error</div>
+    }
+
+    <form asp-controller="Account" asp-action="Login" method="post" class="auth-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ReturnUrl" />
+
+        <label>
+            <span>Email</span>
+            <input asp-for="Email" type="email" placeholder="you@example.com" autocomplete="email" />
+            <span asp-validation-for="Email" class="field-error"></span>
+        </label>
+
+        <label>
+            <span>Password</span>
+            <input asp-for="Password" type="password" placeholder="••••••••" autocomplete="current-password" />
+            <span asp-validation-for="Password" class="field-error"></span>
+        </label>
+
+        <button type="submit" class="btn-primary btn-block">Log in</button>
+    </form>
+
+    <p class="auth-switch">New here? <a asp-controller="Account" asp-action="Register">Create an account</a></p>
+
+    <div class="demo-hint">
+        <strong>Try the demo:</strong> maria@avatisment.dev / demo1234
+    </div>
+</div>

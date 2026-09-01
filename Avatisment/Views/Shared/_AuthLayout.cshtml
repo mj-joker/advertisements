@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Avatisment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+    <div class="auth-shell">
+        <div class="auth-visual">
+            <div class="auth-visual-inner">
+                <span class="brand-mark brand-mark-lg">A</span>
+                <h1>Avatisment</h1>
+                <p>Where your ideas find their people.</p>
+                <div class="auth-blob auth-blob-1"></div>
+                <div class="auth-blob auth-blob-2"></div>
+            </div>
+        </div>
+        <div class="auth-form-col">
+            @RenderBody()
+        </div>
+    </div>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>
